@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Animated, Easing } from 'react-native';
+import { createAnimatedComponent, AnimatedValue, AnimatedTiming, AnimatedSpring, Easing } from 'react-native';
 import wrapStyleTransforms from './wrapStyleTransforms';
 import getStyleValues from './getStyleValues';
 import flattenStyle from './flattenStyle';
@@ -103,7 +103,7 @@ function transitionToValue(
   delay,
 ) {
   if (duration || easing || delay) {
-    Animated.timing(transitionValue, {
+    AnimatedTiming(transitionValue, {
       toValue,
       delay,
       duration: duration || 1000,
@@ -113,7 +113,7 @@ function transitionToValue(
       useNativeDriver,
     }).start();
   } else {
-    Animated.spring(transitionValue, { toValue, useNativeDriver }).start();
+    AnimatedSpring(transitionValue, { toValue, useNativeDriver }).start();
   }
 }
 
@@ -122,7 +122,7 @@ export default function createAnimatableComponent(WrappedComponent) {
   const wrappedComponentName =
     WrappedComponent.displayName || WrappedComponent.name || 'Component';
 
-  const Animatable = Animated.createAnimatedComponent(WrappedComponent);
+  const Animatable = createAnimatedComponent(WrappedComponent);
 
   return class AnimatableComponent extends Component {
     static displayName = `withAnimatable(${wrappedComponentName})`;
@@ -181,7 +181,7 @@ export default function createAnimatableComponent(WrappedComponent) {
     constructor(props) {
       super(props);
 
-      const animationValue = new Animated.Value(
+      const animationValue = new AnimatedValue(
         getAnimationOrigin(0, this.props.direction),
       );
       let animationStyle = {};
@@ -229,10 +229,10 @@ export default function createAnimatableComponent(WrappedComponent) {
       Object.keys(currentTransitionValues).forEach(key => {
         const value = currentTransitionValues[key];
         if (INTERPOLATION_STYLE_PROPERTIES.indexOf(key) !== -1) {
-          transitionValues[key] = new Animated.Value(0);
+          transitionValues[key] = new AnimatedValue(0);
           styleValues[key] = value;
         } else {
-          const animationValue = new Animated.Value(value);
+          const animationValue = new AnimatedValue(value);
           transitionValues[key] = animationValue;
           styleValues[key] = animationValue;
         }
@@ -390,7 +390,7 @@ export default function createAnimatableComponent(WrappedComponent) {
         easing = Easing.out(easing);
       }
 
-      Animated.timing(animationValue, {
+      AnimatedTiming(animationValue, {
         toValue,
         easing,
         isInteraction: iterationCount <= 1,
@@ -425,7 +425,7 @@ export default function createAnimatableComponent(WrappedComponent) {
         const toValue = toValuesFlat[property];
         let transitionValue = transitionValues[property];
         if (!transitionValue) {
-          transitionValue = new Animated.Value(0);
+          transitionValue = new AnimatedValue(0);
         }
         const needsInterpolation =
           INTERPOLATION_STYLE_PROPERTIES.indexOf(property) !== -1;
